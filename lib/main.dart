@@ -1,12 +1,18 @@
+import 'package:first_demo/Pages/routePage01.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
+import 'Plugins/battery.dart';
+import 'Plugins/appleMap.dart';
+import 'Pages/pages_headers.dart';
+import 'Pages/routePage01.dart';
 
 
 void main() {
   runApp(MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -16,82 +22,65 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: Scaffold(
+        appBar:AppBar(
+          title:Text("Demo")
+        ),
+        body: Container(
+          child: AppTestList(),
+        ),
+      )
     );
   }
+
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  static const platform = const MethodChannel('ios.flutter.plugin.battery');
-  String _batteryLevel = 'Unknown battery level.';
-
-  Future<void> _getBatteryLevel() async {
-    String batteryLevel;
-    try {
-      final int result = await platform.invokeMethod('getBatteryLevel');
-      batteryLevel = 'Battery level at $result % .';
-    } on PlatformException catch (e) {
-      batteryLevel = "Failed to get battery level: '${e.message}'.";
-    }
-
-    setState(() {
-      _batteryLevel = batteryLevel;
-    });
-  }
-
-  Widget getPlatformCustomView(){
-      if (defaultTargetPlatform == TargetPlatform.iOS){
-        return UiKitView(
-          viewType: "FPluginViewRedFactory_registerId",
-          creationParams:{"lat":20.000,"long":120.0},
-          creationParamsCodec: const StandardMessageCodec(),
-        );
-      }
-      else {
-          return Text("Not supported");
-      }
-  }
+class AppTestList extends StatelessWidget {
+  final List<String> titles = ["获取电量","简单的接入地图","页面跳转"];
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            RaisedButton(
-              child: Text('Get Battery Level'),
-              onPressed: _getBatteryLevel,
-            ),
-            Text(_batteryLevel),
-            Container(
-              width: 100,
-              height: 100,
-              color: Colors.black,
-              child: getPlatformCustomView(),
-            )
-          ],
-        ),
-      ),
+    return ListView.separated(
+      itemCount:titles.length,
+      separatorBuilder:(buildContext,index){
+        return Divider();
+      },
+      itemBuilder: (buildContext,index){
+        return ListTile(
+          title:Text(titles[index]),
+          trailing: Icon(Icons.keyboard_arrow_right),
+          onTap: (){
+            _cellTaped(index,context);
+          },
+        );
+      }
     );
   }
+    
+  _cellTaped(int index,BuildContext context){
+    print(titles[index]);
+    switch (index) {
+      case 0:
+        Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => FirstRoute()),
+            );
+        break;
+      case 1:
+      Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SecondRoute()),
+          );
+      break;
+      case 2:
+      Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => RoutePage01()),
+          );
+      break;
+      default:
+      break;
+    }
 
+  }
 }

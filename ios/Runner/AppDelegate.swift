@@ -1,8 +1,12 @@
 import UIKit
 import Flutter
+import CoreLocation
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
+    
+   var manager : CLLocationManager = CLLocationManager.init()
+    
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -14,6 +18,8 @@ import Flutter
     self.registerBatteryPluginWithBinaryMessager(controller.binaryMessenger)
     
     self.registerCustomViewPlugin()
+    
+    manager.requestWhenInUseAuthorization()
     
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
