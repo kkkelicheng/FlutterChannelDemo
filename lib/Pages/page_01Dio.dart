@@ -22,7 +22,7 @@ class _LearnDioState extends State<LearnDio> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Text("data")
+        child: Text("Test data")
       ),
     );
   }

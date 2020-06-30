@@ -29,6 +29,7 @@ class FPluginViewRed: UIView,MKMapViewDelegate , CLLocationManagerDelegate{
         super.init(frame: frame)
         self.backgroundColor = .red
         addSubview(mapView)
+//        clManager.requestWhenInUseAuthorization(); //已经在appdelegate中做了
         mapView.autoresizingMask = [.flexibleHeight,.flexibleWidth]
         clManager.delegate = self
         clManager.startUpdatingLocation()
@@ -48,7 +49,7 @@ class FPluginViewRed: UIView,MKMapViewDelegate , CLLocationManagerDelegate{
     func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
         if isFirstLoad {
             isFirstLoad = false
-            mapView.setRegion(MKCoordinateRegion.init(center: userLocation.coordinate, span: MKCoordinateSpan.init(latitudeDelta: 0.01, longitudeDelta: 0.01)), animated: true)
+            mapView.setRegion(MKCoordinateRegion.init(center: userLocation.coordinate, span: MKCoordinateSpan.init(latitudeDelta: 0.1, longitudeDelta: 0.1)), animated: true)
         }
     }
     
@@ -72,9 +73,20 @@ class FPluginViewRed: UIView,MKMapViewDelegate , CLLocationManagerDelegate{
         let location = CLLocation.init(latitude: col.latitude, longitude: col.longitude)
         self.geoDecoder.reverseGeocodeLocation(location) { (places:[CLPlacemark]?, error:Error?) in
             if let places = places , let lasetPlace = places.last{
-                let addressDesc = (lasetPlace.administrativeArea ?? "") + (lasetPlace.subAdministrativeArea ?? "")
+                var container : [String] = [];
+                if let province = lasetPlace.administrativeArea {container.append(province)}
+                if let city = lasetPlace.locality {container.append(city)}
+                if let area = lasetPlace.subLocality {container.append(area)}
+
+                let addressDesc = container.joined(separator: "-")
+                FPluginMapChannel.share.sendLocationUpdate(locationDesc: addressDesc)
             }
         }
+    }
+    
+    //地图发生偏移的时候获取
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+        self.didChangeRegionAndGeoCode(col: mapView.centerCoordinate);
     }
 }
 

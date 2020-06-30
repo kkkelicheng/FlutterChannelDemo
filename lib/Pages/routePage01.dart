@@ -16,7 +16,7 @@ class _RoutePage01State extends State<RoutePage01> {
       body: Container(
         child: Center(
           child:InkWell(
-            child: Text("push to page2"),
+            child: Text("push to page 02"),
             onTap: (){
                 var route = MaterialPageRoute(builder:(ctx) => RoutePage02());
                 Navigator.of(context).push(route);

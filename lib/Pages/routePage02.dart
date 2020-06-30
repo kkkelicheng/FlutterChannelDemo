@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'routePage03.dart';
+
 class RoutePage02 extends StatefulWidget {
   @override
   _RoutePage02State createState() => _RoutePage02State();
@@ -15,9 +17,10 @@ class _RoutePage02State extends State<RoutePage02> {
       body: Container(
         child: Center(
           child:InkWell(
-            child: Text("回到首页"),
+            child: Text("push to page 03"),
             onTap: (){
-                Navigator.of(context).popUntil(ModalRoute.withName("/"));
+                var route = MaterialPageRoute(builder:(ctx) => RoutePage03());
+                Navigator.of(context).push(route);
             },
           )
         ),

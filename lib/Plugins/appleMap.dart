@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
-
-
 class SecondRoute extends StatefulWidget {
   SecondRoute({Key key, this.title}) : super(key: key);
 
@@ -24,79 +22,94 @@ class SecondRoute extends StatefulWidget {
 }
 
 class _SecondRouteState extends State<SecondRoute> {
-  static const platform = const MethodChannel('ios.flutter.plugin.battery');
-  String _batteryLevel = 'Unknown battery level.';
+  static const platform = const MethodChannel('ios.flutter.plugin.map');
+  String locationDesc;
+  Widget mapView;
 
-  Future<void> _getBatteryLevel() async {
-    String batteryLevel;
-    try {
-      final int result = await platform.invokeMethod('getBatteryLevel');
-      batteryLevel = 'Battery level at $result % .';
-    } on PlatformException catch (e) {
-      batteryLevel = "Failed to get battery level: '${e.message}'.";
-    }
+  initState() {
+    super.initState();
+    getPlatformCustomView();
+    platform.setMethodCallHandler(_handleNativeMethodCall);
+  }
 
+  Future<dynamic> _handleNativeMethodCall(MethodCall call) async {
+    var place = call.arguments["locationDesc"];
+    print("place is $place");
+    print(
+        "...setMethodCallHandler ${call.method} argument:${call.arguments.toString()}");
     setState(() {
-      _batteryLevel = batteryLevel;
+      locationDesc = place;
     });
   }
 
-  Widget getPlatformCustomView(){
-      if (defaultTargetPlatform == TargetPlatform.iOS){
-        return UiKitView(
-          viewType: "FPluginViewRedFactory_registerId",
-          creationParams:{"lat":20.000,"long":120.0},
-          creationParamsCodec: const StandardMessageCodec(),
-        );
-      }
-      else {
-          return Text("Not supported");
-      }
+  Future<dynamic> _handleNativeMethodCall2(MethodCall call) async {
+    if (call.method == "locationDescUpdate") {
+      //这个方法明显出错了，居然没报错什么的。。。。。。。。。。。。。。。。。。
+      //坑了好几个小时
+      var args = call.arguments as Map<String,dynamic>;
+      print("args ${args["locationDesc"]}");
+      var place = call.arguments["locationDesc"];
+      print("place is $place");
+      print(
+          "...setMethodCallHandler ${call.method} argument:${call.arguments.toString()}");
+      setState(() {
+        locationDesc = place;
+      });
+    }
   }
 
-  Widget getDot(){
+  Widget getPlatformCustomView() {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      mapView = UiKitView(
+        viewType: "FPluginViewRedFactory_registerId",
+        creationParams: {"lat": 20.000, "long": 120.0},
+        creationParamsCodec: const StandardMessageCodec(),
+      );
+      return mapView;
+    } else {
+      mapView = Text("Not supported");
+      return mapView;
+    }
+  }
+
+  Widget getDot() {
     return Container(
-      width:100,
-      height:100,
-      decoration:BoxDecoration(
-        borderRadius: BorderRadius.circular(5),
-        color: Colors.red
-        )
-    );
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5), color: Colors.red));
   }
 
-@override
-Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('简单接入地图'),
+        title: Text('苹果地图'),
+        actions: <Widget>[
+          IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                setState(() {
+                  locationDesc = "loding...";
+                });
+              })
+        ],
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Container(
-              height:40,
-              color: Colors.green,
-              child:Center(
-                child:Text("当前位置")
-              )
-            ),
-            Expanded(child: 
-              Stack(
-                alignment:Alignment.center,
-                children:[
-                  getPlatformCustomView(),
-                  Container(
-                    width:200,
-                    height:200,
-                    color:Colors.grey
-                  ),
-                  getDot(),
-                  Icon(Icons.location_on)
-                ]
-              )
-            )
+                height: 40,
+                color: Colors.green,
+                child: Center(child: Text("$locationDesc"))),
+            Expanded(
+                child: Stack(alignment: Alignment.center, children: [
+              mapView,
+              Container(width: 200, height: 200, color: Colors.grey),
+              getDot(),
+              Icon(Icons.location_on)
+            ]))
           ],
         ),
       ),

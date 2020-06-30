@@ -17,6 +17,7 @@ import CoreLocation
     
     self.registerBatteryPluginWithBinaryMessager(controller.binaryMessenger)
     
+    FPluginMapChannel.share.initChannel(controller.binaryMessenger)
     self.registerCustomViewPlugin()
     
     manager.requestWhenInUseAuthorization()
@@ -30,8 +31,9 @@ import CoreLocation
 //电池插件
 extension AppDelegate {
     private func registerBatteryPluginWithBinaryMessager(_ messager : FlutterBinaryMessenger){
+        //建立与flutter的通信
         let batteryChannel = FlutterMethodChannel.init(name: "ios.flutter.plugin.battery", binaryMessenger: messager)
-        
+        //监听通信
         batteryChannel.setMethodCallHandler { (call:FlutterMethodCall, result:@escaping FlutterResult) in
             //dart 调用 platform.invokeMethod('getBatteryLevel');触发
             if ("getBatteryLevel" == call.method) {
@@ -58,17 +60,23 @@ extension AppDelegate {
 //自定义视图
 extension AppDelegate {
     private func registerCustomViewPlugin(){
-
-        //获取登记员  用key注册一个插件  The unique key identifying the plugin.
         let registrar = self.registrar(forPlugin: FPluginViewRed.registerId)
         
        // A unique identifier for the factory, the Dart code of the Flutter app can use
        // this identifier to request creation of a `UIView` by the registered factory
         //登记员注册一个工厂，用来创建插件 Plugins expose `UIView` for embedding in Flutter apps by registering a view factory
         //所以在dart中，会使用这个工厂的Id 去生产出View
-        registrar.register(FPluginViewRedFactory(), withId: FPluginViewRedFactory.registerId)
-            
-        
-        
+        /* Dart
+         mapView = UiKitView(
+                viewType: "FPluginViewRedFactory_registerId",
+                creationParams: {"lat": 20.000, "long": 120.0},
+                creationParamsCodec: const StandardMessageCodec(),
+         );
+         */
+        registrar.register(
+            FPluginViewRedFactory(),
+            withId: FPluginViewRedFactory.registerId,
+            gestureRecognizersBlockingPolicy:
+            FlutterPlatformViewGestureRecognizersBlockingPolicyWaitUntilTouchesEnded)
     }
 }
